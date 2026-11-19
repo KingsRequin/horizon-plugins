@@ -118,7 +118,8 @@ horizon.on("dnd", (d) => {
   synchroniserFocus();
 });
 horizon.on("alert", (a) => {
-  if (a && a.kind === "claude") signaler();
+  // `light` : signal lumineux voulu (réglage « Claude attend » d'Horizon).
+  if (a && a.kind === "claude" && a.light !== false) signaler();
 });
 horizon.on("timer", () => signaler());
 horizon.settings.onChange(() => synchroniserFocus());

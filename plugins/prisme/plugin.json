@@ -1,7 +1,7 @@
 {
   "id": "prisme",
   "name": "Éclairage (Prisme)",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "api": 0,
   "author": "KingsRequin",
   "description": "Scène et luminosité de Prisme ; la couleur de la pochette, « Ne pas déranger », Claude qui attend et la fin du minuteur sur les LED.",
