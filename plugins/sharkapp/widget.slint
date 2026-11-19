@@ -14,9 +14,10 @@ export component Widget inherits Window {
     in property <[Batterie]> batteries;
     background: transparent;
 
-    if root.batteries.length > 0: VerticalLayout {
+    // Le `if` dans une mise en page : seul sous la fenêtre, il n'aurait pas de largeur.
+    VerticalLayout {
         alignment: center;
-        Island {
+        if root.batteries.length > 0: Island {
             gap: 10px;
             for b in root.batteries: HorizontalLayout {
                 spacing: 4px;

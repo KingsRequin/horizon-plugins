@@ -38,8 +38,8 @@
           "%LOCALAPPDATA%/KingsHub/phone.json"
         ]
       },
-      "size": 6246,
-      "sha256": "eded22e9e9c051fec14737476781d49afd711c7c2607c554cb8bda0fd64d531c",
+      "size": 6337,
+      "sha256": "e1f06cd653d72482bf71d2e5fb07219036352cbd7f8a8f5a8f403f40d56bc60b",
       "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/sharkapp-1.0.0.json"
     }
   ]
