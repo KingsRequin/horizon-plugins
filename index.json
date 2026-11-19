@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "plugins": [
+    {
+      "id": "prisme",
+      "name": "Éclairage (Prisme)",
+      "version": "1.0.0",
+      "api": 0,
+      "author": "KingsRequin",
+      "description": "Scène et luminosité de Prisme ; la couleur de la pochette, « Ne pas déranger », Claude qui attend et la fin du minuteur sur les LED.",
+      "icon": "lightbulb",
+      "permissions": {
+        "connect": [
+          "ws://127.0.0.1:28650"
+        ],
+        "events": [
+          "accent",
+          "dnd",
+          "alert",
+          "timer"
+        ]
+      },
+      "size": 10322,
+      "sha256": "757389e2d65ae71bb22b52a4ee42c93c0a670206dbca32e858f4ed6c5d7a5e71",
+      "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/prisme-1.0.0.json"
+    },
+    {
+      "id": "sharkapp",
+      "name": "Batteries (SharkApp)",
+      "version": "1.0.0",
+      "api": 0,
+      "author": "KingsRequin",
+      "description": "Batteries du téléphone et de la montre, alerte batterie faible et appel en cours dans l'îlot (fichiers de l'agent SharkApp).",
+      "icon": "batteryFull",
+      "permissions": {
+        "files": [
+          "%LOCALAPPDATA%/KingsHub/batteries.json",
+          "%LOCALAPPDATA%/KingsHub/phone.json"
+        ]
+      },
+      "size": 6246,
+      "sha256": "eded22e9e9c051fec14737476781d49afd711c7c2607c554cb8bda0fd64d531c",
+      "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/sharkapp-1.0.0.json"
+    }
+  ]
+}

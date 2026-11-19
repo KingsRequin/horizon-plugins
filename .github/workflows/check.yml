@@ -1,0 +1,31 @@
+name: Vérification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Horizon (dernière version publiée)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download --repo KingsRequin/horizon --pattern horizon.exe --dir horizon
+      - name: Chaque plugin se charge
+        shell: pwsh
+        run: |
+          $failed = $false
+          foreach ($dir in Get-ChildItem plugins -Directory) {
+            & .\horizon\horizon.exe --check-plugin $dir.FullName | Out-Host
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          }
+          if ($failed) { exit 1 }
+      - name: Index et paquets à jour
+        run: python scripts/build.py --check
