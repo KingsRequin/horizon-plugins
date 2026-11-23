@@ -1,0 +1,258 @@
+// Panneau du quota Claude : chaque limite (session de 5 h, semaine, modèles) avec sa remise à
+// zéro et son rythme ; part d'un modèle dans la semaine ; répartition par usage ; crédits
+// supplémentaires. L'ouverture redemande le quota (au plus une fois par minute, côté script).
+// Tous les textes sont faits par main.js.
+import { PanelBase, Icon, Theme } from "@horizon";
+
+// Une limite.
+export struct Limite {
+    // « Semaine · tous modèles », « Session de 5 h », nom du modèle.
+    titre: string,
+    // Limite propre à un modèle.
+    modele: bool,
+    // « 88 % » et part utilisée (0 à 1).
+    pct: string,
+    utilise: float,
+    // 0 accent, 1 attention, 2 alerte.
+    niveau: int,
+    // « Remise à zéro jeu. 20 nov. à 10:00 · dans 2 j 23 h » ; vide : inconnue.
+    remise: string,
+    // Part d'un modèle dans la semaine générale ; vide : aucune.
+    part: string,
+    // « 88 % utilisés pour 40 % du temps écoulé · plafond vers … » ; vide : aucun.
+    rythme: string,
+}
+
+// Une ligne de la répartition de la semaine.
+export struct Part {
+    nom: string,
+    pct: string,
+    valeur: float,
+    nulle: bool,
+}
+
+// Piste de progression (`valeur` de 0 à 1), sans animation.
+component Piste inherits Rectangle {
+    in property <float> valeur;
+    in property <color> teinte: Theme.accent;
+    height: 4px;
+    border-radius: self.height / 2;
+    background: Theme.track;
+    Rectangle {
+        x: 0;
+        width: parent.width * clamp(root.valeur, 0, 1);
+        height: parent.height;
+        border-radius: min(self.width, self.height) / 2;
+        background: root.teinte;
+    }
+}
+
+// Ligne secondaire qui passe à la ligne. Largeur fixe (celle du contenu du panneau) : la hauteur
+// d'un texte à la ligne est mal mesurée dans une liste tant que sa largeur vient de la mise en
+// page (une ligne comptée au lieu de deux).
+component Note inherits Text {
+    width: 326px;
+    color: Theme.text-dim;
+    font-size: Theme.fs-meta;
+    wrap: word-wrap;
+}
+
+component Filet inherits Rectangle {
+    height: 1px;
+    background: Theme.divider;
+}
+
+export component Panel inherits Window {
+    // « mis à jour il y a 2 min » ; vide : jamais reçu.
+    in property <string> maj;
+    in property <bool> a-quota;
+    in property <[Limite]> limites;
+    // La répartition a au moins une part non nulle.
+    in property <bool> a-repartition;
+    in property <[Part]> repartition;
+    in property <string> credits;
+    in property <string> erreur;
+    // Vrai à l'ouverture (le quota est redemandé), faux ensuite (les textes relatifs avancent).
+    callback tic(bool);
+    property <bool> ouvert;
+    background: transparent;
+    default-font-family: Theme.font;
+
+    // Le panneau n'existe que tant qu'il est montré : un tic juste après sa création, un seul.
+    Timer {
+        interval: 250ms;
+        running: !root.ouvert;
+        triggered => {
+            root.ouvert = true;
+            root.tic(true);
+        }
+    }
+
+    Timer {
+        interval: 30s;
+        running: true;
+        triggered => {
+            root.tic(false);
+        }
+    }
+
+    PanelBase {
+        spacing: 10px;
+
+        // 326 px de contenu dans tous les états (la largeur des lignes de `Note`) : le panneau
+        // ne change pas de largeur quand le quota arrive.
+        HorizontalLayout {
+            preferred-width: 326px;
+            spacing: 8px;
+            Text {
+                text: "Quota Claude";
+                color: Theme.text;
+                font-size: Theme.fs-title;
+                font-weight: 600;
+                vertical-alignment: center;
+                horizontal-stretch: 1;
+            }
+            if root.maj != "": Text {
+                text: root.maj;
+                color: Theme.text-dim;
+                font-size: Theme.fs-meta;
+                vertical-alignment: center;
+            }
+        }
+
+        for l in root.limites: VerticalLayout {
+            spacing: 4px;
+            // Pas le même nom que la propriété `teinte` de `Piste` : `teinte: teinte` se lirait
+            // comme une liaison sur elle-même.
+            property <color> couleur: l.niveau == 2 ? Theme.bad : l.niveau == 1 ? Theme.warn : Theme.accent;
+            HorizontalLayout {
+                spacing: 8px;
+                HorizontalLayout {
+                    horizontal-stretch: 1;
+                    Text {
+                        text: l.titre;
+                        color: Theme.text;
+                        font-size: Theme.fs-body;
+                        font-weight: 600;
+                        vertical-alignment: bottom;
+                        overflow: elide;
+                    }
+                    if l.modele: Text {
+                        text: " · limite propre au modèle";
+                        color: Theme.text-dim;
+                        font-size: Theme.fs-meta;
+                        vertical-alignment: bottom;
+                        horizontal-stretch: 1;
+                        overflow: elide;
+                    }
+                    if !l.modele: Rectangle {
+                        horizontal-stretch: 1;
+                    }
+                }
+                Text {
+                    text: l.pct;
+                    color: couleur;
+                    font-family: Theme.font-mono;
+                    font-weight: 600;
+                    font-size: Theme.fs-title;
+                    vertical-alignment: bottom;
+                }
+            }
+            Piste {
+                height: 5px;
+                valeur: l.utilise;
+                teinte: couleur;
+            }
+            if l.remise != "": Note {
+                text: l.remise;
+            }
+            if l.part != "": Note {
+                text: l.part;
+            }
+            if l.rythme != "": Note {
+                text: l.rythme;
+                color: Theme.text;
+            }
+        }
+
+        if root.a-quota && root.a-repartition: VerticalLayout {
+            Filet { }
+            VerticalLayout {
+                padding-top: 8px;
+                spacing: 5px;
+                Text {
+                    text: "RÉPARTITION DE LA SEMAINE";
+                    color: Theme.text-dim;
+                    font-size: 10px;
+                    font-weight: 600;
+                    letter-spacing: 1px;
+                }
+                for r in root.repartition: HorizontalLayout {
+                    spacing: 8px;
+                    opacity: r.nulle ? 0.4 : 1;
+                    Text {
+                        width: 92px;
+                        text: r.nom;
+                        color: Theme.text;
+                        font-size: Theme.fs-meta;
+                        vertical-alignment: center;
+                        overflow: elide;
+                    }
+                    VerticalLayout {
+                        alignment: center;
+                        horizontal-stretch: 1;
+                        Piste {
+                            valeur: r.valeur;
+                        }
+                    }
+                    Text {
+                        // Six chasses de la police à chasse fixe (0,6 em).
+                        width: Theme.fs-meta * 3.6;
+                        text: r.pct;
+                        color: Theme.text-dim;
+                        font-family: Theme.font-mono;
+                        font-size: Theme.fs-meta;
+                        horizontal-alignment: right;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        if root.a-quota: VerticalLayout {
+            Filet { }
+            VerticalLayout {
+                padding-top: 8px;
+                Note {
+                    text: root.credits;
+                }
+            }
+        }
+
+        if !root.a-quota && root.erreur == "": Text {
+            text: "Chargement…";
+            color: Theme.text-dim;
+            font-size: Theme.fs-body;
+        }
+        if root.erreur != "": HorizontalLayout {
+            spacing: 6px;
+            VerticalLayout {
+                padding-top: 1px;
+                alignment: start;
+                Icon {
+                    name: "warning";
+                    size: 13px;
+                    color: Theme.warn;
+                }
+            }
+            // Largeur fixe, comme `Note` : 326 px moins l'icône et l'espace.
+            Text {
+                width: 307px;
+                text: root.erreur;
+                color: Theme.text;
+                font-size: Theme.fs-meta;
+                wrap: word-wrap;
+            }
+        }
+    }
+}

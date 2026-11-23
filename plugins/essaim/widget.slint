@@ -1,0 +1,35 @@
+// Essaim : un atome, coloré quand le curseur est animé ; en pause ou en veille, un petit signe à
+// côté. Clic : pause ou reprise. Essaim absent : le widget ne prend pas de place.
+import { Island, Icon, Theme } from "@horizon";
+
+export component Widget inherits Window {
+    in property <bool> connecte;
+    // 1 en pause, 2 en veille (plein écran), 3 actif.
+    in property <int> etat;
+    out property <bool> own-clicks: true;
+    callback basculer();
+    background: transparent;
+
+    VerticalLayout {
+        alignment: center;
+        if root.connecte: Island {
+            gap: 4px;
+            Icon {
+                name: "atom";
+                size: 15px;
+                color: root.etat == 3 ? Theme.accent : Theme.text-dim;
+                y: (parent.height - self.height) / 2;
+            }
+            if root.etat == 1 || root.etat == 2: Icon {
+                name: root.etat == 1 ? "pause" : "moonFill";
+                size: 10px;
+                color: Theme.text-dim;
+                y: (parent.height - self.height) / 2;
+            }
+        }
+    }
+    TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.basculer(); }
+    }
+}

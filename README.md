@@ -4,22 +4,29 @@ Les plugins proposés dans [Horizon](https://github.com/KingsRequin/horizon) (pa
 réglages) : chacun s'installe d'un clic, se met à jour tout seul et ne joint que ce qu'il a
 déclaré — et que tu as accepté.
 
-> L'API des plugins est en préversion (`"api": 0`) : elle sera figée en `1` à l'ouverture de la
-> bibliothèque.
+> L'API des plugins est en préversion : elle peut encore changer. `"api"` est le niveau dont un
+> plugin a besoin (`0` : le socle ; `1` : dossier de l'utilisateur, sonde d'une machine, terminal
+> SSH, listes de réglages, à partir d'Horizon 0.7). Une version d'Horizon plus ancienne ne
+> propose pas un plugin d'un niveau qu'elle ne connaît pas.
 
 ## Plugins
 
 | Plugin | Ce qu'il fait | Demande |
 |---|---|---|
-| [Éclairage (Prisme)](plugins/prisme) | scène et luminosité de Prisme ; pochette, « Ne pas déranger », Claude et minuteur sur les LED | connexion à Prisme (port 28650), événements d'Horizon |
 | [Batteries (SharkApp)](plugins/sharkapp) | batteries du téléphone et de la montre, alerte batterie faible, appel dans l'îlot | lecture des fichiers de l'agent SharkApp |
+| [Éclairage (Prisme)](plugins/prisme) | scène et luminosité de Prisme ; pochette, « Ne pas déranger », Claude et minuteur sur les LED | connexion à Prisme (port 28650), événements d'Horizon |
+| [Essaim (curseur)](plugins/essaim) | pause d'[Essaim](https://github.com/KingsRequin/essaim) d'un clic, choix du preset, ouverture de ses réglages (presets : Essaim 0.13 ou plus récent) | connexion à Essaim (port 28670) |
+| [Quota Claude](plugins/claude-quota) | quota de l'abonnement Claude : session de 5 h, semaine, limites par modèle, rythme et répartition | lecture de la connexion de Claude Code, API d'Anthropic, verrouillage et veille |
+| [Serveurs (homelab)](plugins/serveurs) | état des machines de `~/.ssh/config` et de celles ajoutées à la main, alerte à la chute et au retour, terminal SSH, interface web | lecture de `~/.ssh/config`, test des machines, terminal SSH, liens web, verrouillage et veille |
 
 ## Proposer un plugin
 
 1. Écris-le avec [PLUGINS.md](https://github.com/KingsRequin/horizon/blob/master/docs/PLUGINS.md)
    (le guide, prêt à donner à une IA) ; vérifie-le avec `horizon.exe --check-plugin <dossier>`.
 2. Ajoute son dossier dans `plugins/<id>/` et lance `python scripts/build.py` (paquet dans
-   `dist/`, entrée dans `index.json`).
+   `dist/`, entrée dans `index.json`). Un `test.js` à côté de `main.js` (Node, sans dépendance :
+   il charge le script avec un faux objet `horizon`) est lancé à chaque vérification ; il n'est
+   pas livré dans le paquet.
 3. Ouvre une pull request. Chaque plugin est relu avant d'être accepté : ses permissions
    doivent être justifiées par ce qu'il fait.
 

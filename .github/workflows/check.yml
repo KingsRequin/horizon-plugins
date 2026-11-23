@@ -13,6 +13,16 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Essais des scripts (plugins/<id>/test.js)
+        shell: pwsh
+        run: |
+          $failed = $false
+          foreach ($test in Get-ChildItem plugins -Filter test.js -Recurse -Depth 1) {
+            Write-Host "--- $($test.Directory.Name)"
+            node $test.FullName | Select-Object -Last 1 | Out-Host
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          }
+          if ($failed) { exit 1 }
       - name: Horizon (dernière version publiée)
         shell: pwsh
         env:

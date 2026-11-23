@@ -1,0 +1,233 @@
+// Panneau Serveurs, propre à chaque exemplaire : état, latence et dernier changement de chaque
+// hôte ; terminal SSH et interface web. L'ouverture relance un sondage (au plus toutes les 5 s)
+// et « depuis … » est tenu à jour chaque seconde (rappel `tic`).
+import { PanelBase, Icon, Theme } from "@horizon";
+
+// Un hôte. `etat` : 0 en attente, 1 en ligne, 2 lent, 3 hors ligne.
+export struct Ligne {
+    id: string,
+    nom: string,
+    // « 192.168.1.20 · TCP 22 ».
+    meta: string,
+    etat: int,
+    // « 5 ms », ou l'état en clair.
+    latence: string,
+    // « 3 h 05 » ; vide : inconnu.
+    depuis: string,
+    // Interface web ; vide : aucune.
+    url: string,
+    // Un terminal SSH peut être ouvert.
+    ssh: bool,
+}
+
+component Pastille inherits Rectangle {
+    in property <int> etat;
+    width: 7px;
+    height: 7px;
+    border-radius: 3.5px;
+    background: root.etat == 0 ? transparent : root.etat == 3 ? Theme.bad : root.etat == 2 ? Theme.warn : Theme.ok;
+    border-width: root.etat == 0 ? 1px : 0;
+    border-color: Theme.text-dim;
+}
+
+// Bouton d'action d'un hôte (carré, icône seule).
+component Bouton inherits Rectangle {
+    in property <string> icone;
+    callback clicked();
+    width: Theme.inner-h;
+    height: Theme.inner-h;
+    border-radius: Theme.inner-radius;
+    background: zone.pressed ? Theme.press : zone.has-hover ? Theme.hover : transparent;
+    Icon {
+        name: root.icone;
+        size: 14px;
+    }
+    zone := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+// Colonne qui défile au-delà de `limite` (molette), avec son repère à droite.
+component Defilement inherits Rectangle {
+    in property <length> limite: 232px;
+    in property <length> ecart: 4px;
+    property <length> contenu: colonne.preferred-height;
+    min-height: min(root.contenu, root.limite);
+    preferred-height: self.min-height;
+    max-height: self.min-height;
+    vue := Flickable {
+        content-width: self.width;
+        content-height: root.contenu;
+        colonne := VerticalLayout {
+            x: 0;
+            y: 0;
+            width: vue.width;
+            height: root.contenu;
+            spacing: root.ecart;
+            @children
+        }
+    }
+    if root.contenu > root.limite: Rectangle {
+        x: root.width - 4px;
+        y: -vue.content-y / root.contenu * root.height;
+        width: 4px;
+        height: max(16px, root.height * root.height / root.contenu);
+        border-radius: 2px;
+        background: Theme.track;
+    }
+}
+
+export component Panel inherits Window {
+    // ~/.ssh/config a été lu (avant : « Chargement… »).
+    in property <bool> charge;
+    in property <[Ligne]> lignes;
+    in property <int> total;
+    in property <int> en-ligne;
+    in property <int> hors-ligne;
+    // Échec d'un terminal SSH ou d'un lien.
+    in property <string> erreur;
+    callback ssh(string);
+    callback web(string);
+    // Chaque seconde tant que le panneau est montré : durées à jour, sondage à l'ouverture.
+    callback tic();
+    background: transparent;
+
+    Timer {
+        interval: 1s;
+        running: true;
+        triggered => { root.tic(); }
+    }
+
+    PanelBase {
+        // Largeur fixe : les noms trop longs sont coupés, les textes passent à la ligne.
+        VerticalLayout {
+            width: 306px;
+            spacing: 8px;
+            HorizontalLayout {
+                spacing: 8px;
+                Text {
+                    text: "Serveurs";
+                    horizontal-stretch: 1;
+                    color: Theme.text;
+                    font-family: Theme.font;
+                    font-size: Theme.fs-title;
+                    font-weight: 600;
+                }
+                if root.total > 0: Text {
+                    text: root.hors-ligne > 0 ? root.hors-ligne + " hors ligne" : root.en-ligne + " / " + root.total + " en ligne";
+                    color: root.hors-ligne > 0 ? Theme.bad : Theme.text-dim;
+                    font-family: Theme.font;
+                    font-size: Theme.fs-meta;
+                    vertical-alignment: center;
+                }
+            }
+            if root.lignes.length > 0: Defilement {
+                limite: root.erreur != "" ? 202px : 232px;
+                for l in root.lignes: Rectangle {
+                    border-width: 1px;
+                    border-color: l.etat == 3 ? Theme.bad.with-alpha(0.4) : Theme.divider;
+                    border-radius: Theme.island-radius - 2px;
+                    background: l.etat == 3 ? Theme.bad.with-alpha(0.08) : transparent;
+                    HorizontalLayout {
+                        padding-top: 7px;
+                        padding-bottom: 7px;
+                        padding-left: 10px;
+                        padding-right: 8px;
+                        spacing: 9px;
+                        VerticalLayout {
+                            alignment: center;
+                            Pastille { etat: l.etat; }
+                        }
+                        VerticalLayout {
+                            horizontal-stretch: 1;
+                            alignment: center;
+                            Text {
+                                text: l.nom;
+                                min-width: 0;
+                                overflow: elide;
+                                color: Theme.text;
+                                font-family: Theme.font;
+                                font-size: Theme.fs-body;
+                                font-weight: 600;
+                            }
+                            Text {
+                                text: l.meta;
+                                min-width: 0;
+                                overflow: elide;
+                                color: Theme.text-dim;
+                                font-family: Theme.font-mono;
+                                font-size: Theme.fs-meta - 1px;
+                                font-weight: 500;
+                            }
+                        }
+                        VerticalLayout {
+                            alignment: center;
+                            Text {
+                                text: l.latence;
+                                horizontal-alignment: right;
+                                color: l.etat == 3 ? Theme.bad : l.etat == 2 ? Theme.warn : Theme.text;
+                                font-family: Theme.font-mono;
+                                font-size: Theme.fs-meta;
+                            }
+                            if l.depuis != "": Text {
+                                text: "depuis " + l.depuis;
+                                horizontal-alignment: right;
+                                color: Theme.text-dim;
+                                font-family: Theme.font;
+                                font-size: Theme.fs-meta - 1px;
+                            }
+                        }
+                        // Place des deux boutons toujours réservée : latences et durées restent alignées.
+                        HorizontalLayout {
+                            width: Theme.inner-h * 2 + 2px;
+                            alignment: end;
+                            spacing: 2px;
+                            if l.url != "": VerticalLayout {
+                                alignment: center;
+                                Bouton {
+                                    icone: "globeSimple";
+                                    clicked => { root.web(l.id); }
+                                }
+                            }
+                            if l.ssh: VerticalLayout {
+                                alignment: center;
+                                Bouton {
+                                    icone: "terminalWindow";
+                                    clicked => { root.ssh(l.id); }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if root.lignes.length == 0: Text {
+                text: root.charge ? "Aucun serveur : ~/.ssh/config est vide, ou tous les hôtes sont masqués (réglages du widget)." : "Chargement…";
+                color: Theme.text-dim;
+                font-family: Theme.font;
+                font-size: Theme.fs-body;
+                wrap: word-wrap;
+            }
+            if root.erreur != "": HorizontalLayout {
+                spacing: 6px;
+                VerticalLayout {
+                    alignment: start;
+                    padding-top: 1px;
+                    Icon {
+                        name: "warning";
+                        size: 13px;
+                        color: Theme.warn;
+                    }
+                }
+                Text {
+                    text: root.erreur;
+                    horizontal-stretch: 1;
+                    color: Theme.text;
+                    font-family: Theme.font;
+                    font-size: Theme.fs-meta;
+                    wrap: word-wrap;
+                }
+            }
+        }
+    }
+}

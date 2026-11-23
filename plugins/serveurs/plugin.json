@@ -1,0 +1,42 @@
+{
+  "id": "serveurs",
+  "name": "Serveurs (homelab)",
+  "version": "1.0.0",
+  "api": 1,
+  "author": "KingsRequin",
+  "description": "État des machines de ~/.ssh/config et de celles ajoutées à la main : pastilles dans la barre, alerte à la chute et au retour, terminal SSH et interface web.",
+  "icon": "hardDrives",
+  "widget": { "squeeze": 7 },
+  "panel": true,
+  "permissions": {
+    "files": ["%USERPROFILE%/.ssh/config"],
+    "events": ["presence"],
+    "system": ["probe", "ssh", "open"]
+  },
+  "settings": [
+    {
+      "key": "hosts",
+      "type": "list",
+      "label": "Serveurs",
+      "help": "Les hôtes de ~/.ssh/config sont suivis d'office : test toutes les 60 s, hors ligne après deux échecs de suite. Pour en renommer, régler ou masquer un : une ligne avec son alias ssh, sans adresse. Une ligne avec une adresse ajoute une machine.",
+      "fields": [
+        { "key": "label", "type": "string", "label": "Nom" },
+        { "key": "id", "type": "string", "label": "Alias ssh", "help": "Nom de l'hôte dans ~/.ssh/config, pour le régler" },
+        { "key": "address", "type": "string", "label": "Adresse", "help": "Vide : la ligne règle l'hôte ssh de cet alias" },
+        {
+          "key": "check",
+          "type": "choice",
+          "label": "Test",
+          "default": "tcp",
+          "options": [
+            { "value": "tcp", "label": "Port TCP" },
+            { "value": "http", "label": "HTTP(S)" }
+          ]
+        },
+        { "key": "port", "type": "number", "label": "Port", "default": 0, "min": 0, "max": 65535, "help": "0 : celui de ssh, sinon 22" },
+        { "key": "url", "type": "string", "label": "Interface web", "help": "http:// ou https:// ; c'est elle que teste HTTP(S)" },
+        { "key": "hidden", "type": "bool", "label": "Masqué" }
+      ]
+    }
+  ]
+}

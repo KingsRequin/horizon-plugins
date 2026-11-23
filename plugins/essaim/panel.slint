@@ -1,0 +1,102 @@
+// Panneau : pause ou reprise, état, presets (celui en place coché), ouvrir Essaim. Les réglages
+// fins restent dans la fenêtre d'Essaim.
+import { PanelBase, ListRow, Theme } from "@horizon";
+
+export struct Preset {
+    nom: string,
+    // Fourni avec Essaim (sinon : enregistré par l'utilisateur).
+    fourni: bool,
+    actif: bool,
+}
+
+// Colonne qui défile au-delà de `limite` (molette), avec son repère à droite.
+component Defilement inherits Rectangle {
+    in property <length> limite: 288px;
+    property <length> contenu: colonne.preferred-height;
+    min-height: min(root.contenu, root.limite);
+    preferred-height: self.min-height;
+    max-height: self.min-height;
+    vue := Flickable {
+        content-width: self.width;
+        content-height: root.contenu;
+        colonne := VerticalLayout {
+            x: 0;
+            y: 0;
+            width: vue.width;
+            height: root.contenu;
+            @children
+        }
+    }
+    if root.contenu > root.limite: Rectangle {
+        x: root.width - 4px;
+        y: -vue.content-y / root.contenu * root.height;
+        width: 4px;
+        height: max(16px, root.height * root.height / root.contenu);
+        border-radius: 2px;
+        background: Theme.track;
+    }
+}
+
+export component Panel inherits Window {
+    in property <bool> connecte;
+    in property <int> etat;
+    // « Actif », « En pause »… et la ligne du dessous (moteur de dessin, synchro Prisme).
+    in property <string> etat-texte;
+    in property <string> detail;
+    in property <[Preset]> presets;
+    // Essaim sait ouvrir sa fenêtre de réglages (sinon : son fichier de configuration).
+    in property <bool> fenetre;
+    callback basculer();
+    callback choisir(string);
+    callback ouvrir();
+    // Chaque seconde tant que le panneau est montré : la liste des presets est redemandée.
+    callback tic();
+    background: transparent;
+
+    Timer {
+        interval: 1s;
+        running: true;
+        triggered => { root.tic(); }
+    }
+
+    PanelBase {
+        title: "Essaim";
+        if !root.connecte: Text {
+            text: "Essaim n’est pas lancé.";
+            color: Theme.text-dim;
+            font-size: Theme.fs-body;
+        }
+        if root.connecte: ListRow {
+            icon: root.etat == 1 ? "play" : "pause";
+            title: root.etat == 1 ? "Reprendre" : "Mettre en pause";
+            subtitle: root.etat-texte;
+            clicked => { root.basculer(); }
+        }
+        if root.connecte && root.detail != "": Text {
+            text: root.detail;
+            color: Theme.text-dim;
+            font-size: Theme.fs-meta;
+            wrap: word-wrap;
+        }
+        if root.presets.length > 0: Text {
+            text: "PRESETS";
+            color: Theme.text-dim;
+            font-size: Theme.fs-meta;
+            font-weight: 600;
+        }
+        // Une vingtaine de presets fournis : la liste défile au lieu d'allonger le panneau.
+        if root.presets.length > 0: Defilement {
+            for p in root.presets: ListRow {
+                icon: p.actif ? "check" : p.fourni ? "sparkle" : "pencilSimple";
+                title: p.nom;
+                clicked => { root.choisir(p.nom); }
+            }
+        }
+        if root.connecte: ListRow {
+            icon: "arrowSquareOut";
+            title: root.fenetre ? "Ouvrir Essaim" : "Ouvrir config.toml";
+            subtitle: root.fenetre ? "Réglages et presets" : "Essaim 0.13 ou plus récent : presets et réglages ici";
+            clicked => { root.ouvrir(); }
+        }
+    }
+}

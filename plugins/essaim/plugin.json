@@ -1,0 +1,15 @@
+{
+  "id": "essaim",
+  "name": "Essaim (curseur)",
+  "version": "1.0.0",
+  "api": 1,
+  "author": "KingsRequin",
+  "description": "Pause d'Essaim d'un clic, choix du preset et ouverture de ses réglages depuis la barre.",
+  "homepage": "https://github.com/KingsRequin/essaim",
+  "icon": "atom",
+  "widget": { "squeeze": 3, "clickableOnHover": true },
+  "panel": true,
+  "permissions": {
+    "connect": ["ws://127.0.0.1:28670"]
+  }
+}

@@ -1,0 +1,132 @@
+// Quota Claude : jauges des limites générales (et d'un modèle proche de son plafond) ; barre
+// large : la prochaine remise à zéro à côté. Données périmées : contenu estompé, avec un petit
+// cercle. Lecture impossible : « — » et un avertissement (la cause est dans le panneau). Rien de
+// connu : le widget ne prend pas de place. Survol : panneau du quota.
+import { Island, Icon, Theme } from "@horizon";
+
+// Une limite montrée dans la barre.
+export struct Jauge {
+    nom: string,
+    // Part utilisée (0 à 1) et son texte (« 88 % »).
+    valeur: float,
+    texte: string,
+    // 0 accent, 1 attention, 2 alerte.
+    niveau: int,
+}
+
+// Étiquette en capitales, piste de 34 px, valeur chiffrée dans la couleur de la jauge.
+component Limite inherits HorizontalLayout {
+    in property <Jauge> jauge;
+    property <color> teinte: root.jauge.niveau == 2 ? Theme.bad : root.jauge.niveau == 1 ? Theme.warn : Theme.accent;
+    // Style simple des barres : capitales plus petites, comme les autres widgets.
+    property <length> corps: Theme.graphic ? Theme.fs-meta * 0.78 : 10px;
+    spacing: 6px;
+    Text {
+        text: root.jauge.nom.to-uppercase();
+        color: Theme.text-dim;
+        font-weight: 600;
+        font-size: root.corps;
+        letter-spacing: root.corps * 0.1;
+        vertical-alignment: center;
+    }
+    Rectangle {
+        width: 34px;
+        Rectangle {
+            y: (parent.height - self.height) / 2;
+            height: 4px;
+            border-radius: 2px;
+            background: Theme.track;
+            Rectangle {
+                x: 0;
+                width: parent.width * clamp(root.jauge.valeur, 0, 1);
+                height: parent.height;
+                border-radius: min(self.width, self.height) / 2;
+                background: root.teinte;
+            }
+        }
+    }
+    Text {
+        // Quatre chasses de la police à chasse fixe : la jauge ne bouge pas d'un chiffre à l'autre.
+        min-width: 24px;
+        text: root.jauge.texte;
+        color: root.teinte;
+        font-family: Theme.font-mono;
+        font-weight: 500;
+        font-size: 10px;
+        vertical-alignment: center;
+    }
+}
+
+export component Widget inherits Window {
+    // Quota lu au moins une fois, ou erreur connue (sinon rien n'est montré).
+    in property <bool> connu;
+    // Aucune réponse exploitable : « — » et un avertissement.
+    in property <bool> illisible;
+    // Dernière lecture en échec : valeurs d'avant.
+    in property <bool> perime;
+    in property <[Jauge]> jauges;
+    // « remise à zéro dans 4 j 15 h » ; vide : aucune.
+    in property <string> remise;
+    // Barre resserrée (posée par Horizon) : pas de remise à zéro.
+    in property <bool> compact;
+    background: transparent;
+    default-font-family: Theme.font;
+
+    // Le `if` dans une mise en page : seul sous la fenêtre, il n'aurait pas de largeur.
+    VerticalLayout {
+        alignment: center;
+        if root.connu: Island {
+            // Données périmées : le contenu est estompé, pas l'îlot.
+            Rectangle {
+                opacity: root.perime && !root.illisible ? 0.6 : 1;
+                HorizontalLayout {
+                    spacing: root.illisible ? 6px : 10px;
+                    Icon {
+                        name: "chartDonut";
+                        size: 13px;
+                        color: Theme.text-dim;
+                        y: (parent.height - self.height) / 2;
+                    }
+                    if !root.illisible: HorizontalLayout {
+                        spacing: 10px;
+                        for j in root.jauges: Limite {
+                            jauge: j;
+                        }
+                        if !root.compact && root.remise != "": Text {
+                            text: root.remise;
+                            color: Theme.text-dim;
+                            font-size: Theme.fs-meta;
+                            font-weight: 500;
+                            vertical-alignment: center;
+                        }
+                        // Petit cercle des données périmées.
+                        if root.perime: VerticalLayout {
+                            alignment: center;
+                            Rectangle {
+                                width: 5px;
+                                height: 5px;
+                                border-radius: 2.5px;
+                                border-width: 1px;
+                                border-color: Theme.text;
+                            }
+                        }
+                    }
+                    if root.illisible: Text {
+                        text: "—";
+                        color: Theme.text-dim;
+                        font-family: Theme.font-mono;
+                        font-size: Theme.fs-meta;
+                        font-weight: 600;
+                        vertical-alignment: center;
+                    }
+                    if root.illisible: Icon {
+                        name: "warning";
+                        size: 12px;
+                        color: Theme.warn;
+                        y: (parent.height - self.height) / 2;
+                    }
+                }
+            }
+        }
+    }
+}

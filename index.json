@@ -2,6 +2,46 @@
   "version": 1,
   "plugins": [
     {
+      "id": "claude-quota",
+      "name": "Quota Claude",
+      "version": "1.0.0",
+      "api": 1,
+      "author": "KingsRequin",
+      "description": "Quota de l'abonnement Claude (session de 5 h, semaine, limites par modèle), lu à l'API d'Anthropic avec la connexion de Claude Code.",
+      "icon": "chartDonut",
+      "permissions": {
+        "files": [
+          "%USERPROFILE%/.claude/.credentials.json"
+        ],
+        "http": [
+          "https://api.anthropic.com/api/oauth/usage"
+        ],
+        "events": [
+          "presence"
+        ]
+      },
+      "size": 30080,
+      "sha256": "283cef9582d63f6d321b70859304715c4e522e0b329c1def2afbe2c452efecf0",
+      "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/claude-quota-1.0.0.json"
+    },
+    {
+      "id": "essaim",
+      "name": "Essaim (curseur)",
+      "version": "1.0.0",
+      "api": 1,
+      "author": "KingsRequin",
+      "description": "Pause d'Essaim d'un clic, choix du preset et ouverture de ses réglages depuis la barre.",
+      "icon": "atom",
+      "permissions": {
+        "connect": [
+          "ws://127.0.0.1:28670"
+        ]
+      },
+      "size": 9288,
+      "sha256": "68de0f6989062a36cf30e46094b5fe295fc8e0a2f9120d079637d06417e99206",
+      "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/essaim-1.0.0.json"
+    },
+    {
       "id": "prisme",
       "name": "Éclairage (Prisme)",
       "version": "1.0.1",
@@ -23,6 +63,31 @@
       "size": 10423,
       "sha256": "a629d91c6f088d5911a46e9617462daafa685e2419febfbc9bf21a9dc16f3273",
       "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/prisme-1.0.1.json"
+    },
+    {
+      "id": "serveurs",
+      "name": "Serveurs (homelab)",
+      "version": "1.0.0",
+      "api": 1,
+      "author": "KingsRequin",
+      "description": "État des machines de ~/.ssh/config et de celles ajoutées à la main : pastilles dans la barre, alerte à la chute et au retour, terminal SSH et interface web.",
+      "icon": "hardDrives",
+      "permissions": {
+        "files": [
+          "%USERPROFILE%/.ssh/config"
+        ],
+        "events": [
+          "presence"
+        ],
+        "system": [
+          "probe",
+          "ssh",
+          "open"
+        ]
+      },
+      "size": 40094,
+      "sha256": "10798bc3d83c875105c412e1ea1027924de4a051b25b08f5730b2e1ce70420de",
+      "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/serveurs-1.0.0.json"
     },
     {
       "id": "sharkapp",

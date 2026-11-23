@@ -1,0 +1,105 @@
+// Serveurs (homelab) : une pastille par hôte (vert, orange si lent, rouge hors ligne, vide en
+// attente) et le nombre d'hôtes hors ligne ; au-delà de 8 hôtes, « en ligne / total ». Barre
+// non resserrée et 6 hôtes au plus : le nom de chaque hôte à côté de sa pastille. Aucun
+// serveur : clic = réglages. Survol = panneau (terminal SSH, interface web).
+import { Island, Icon, Theme } from "@horizon";
+
+// Un hôte. `etat` : 0 en attente, 1 en ligne, 2 lent, 3 hors ligne.
+export struct Hote {
+    nom: string,
+    etat: int,
+}
+
+component Pastille inherits Rectangle {
+    in property <int> etat;
+    width: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background: root.etat == 0 ? transparent : root.etat == 3 ? Theme.bad : root.etat == 2 ? Theme.warn : Theme.ok;
+    border-width: root.etat == 0 ? 1px : 0;
+    border-color: Theme.text-dim;
+}
+
+export component Widget inherits Window {
+    // Hôtes de l'exemplaire (vide au-delà de 8 : le compteur les remplace).
+    in property <[Hote]> hotes;
+    in property <int> total;
+    in property <int> hors-ligne;
+    // Barre resserrée (posée par Horizon) : pastilles seules.
+    in property <bool> compact;
+    // Aucun serveur : ouvrir les réglages de l'exemplaire.
+    callback reglages();
+    property <bool> noms: !root.compact && root.total <= 6;
+    background: transparent;
+
+    VerticalLayout {
+        alignment: center;
+        Island {
+            gap: 6px;
+            Icon {
+                name: "hardDrives";
+                size: 14px;
+                color: root.hors-ligne > 0 ? Theme.bad : root.total == 0 && zone.has-hover ? Theme.text : Theme.text-dim;
+                y: (parent.height - self.height) / 2;
+            }
+            if root.total == 0: Text {
+                text: "Serveurs";
+                color: zone.has-hover ? Theme.text : Theme.text-dim;
+                font-family: Theme.font;
+                font-size: Theme.fs-meta;
+                font-weight: 500;
+                vertical-alignment: center;
+            }
+            // Noms à côté des pastilles.
+            if root.total > 0 && root.noms: HorizontalLayout {
+                spacing: 10px;
+                for h in root.hotes: HorizontalLayout {
+                    spacing: 5px;
+                    VerticalLayout {
+                        alignment: center;
+                        Pastille { etat: h.etat; }
+                    }
+                    Text {
+                        text: h.nom;
+                        max-width: 140px;
+                        overflow: elide;
+                        color: h.etat == 3 ? Theme.bad : Theme.text;
+                        font-family: Theme.font;
+                        font-size: Theme.fs-meta;
+                        font-weight: 500;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+            if root.total > 0 && !root.noms && root.total <= 8: HorizontalLayout {
+                spacing: 3px;
+                for h in root.hotes: VerticalLayout {
+                    alignment: center;
+                    Pastille { etat: h.etat; }
+                }
+            }
+            if root.total > 8: Text {
+                text: "\{root.total - root.hors-ligne}/\{root.total}";
+                color: Theme.text;
+                font-family: Theme.font-mono;
+                font-size: Theme.fs-meta;
+                font-weight: 600;
+                vertical-alignment: center;
+            }
+            if root.hors-ligne > 0: Text {
+                text: root.hors-ligne;
+                color: Theme.bad;
+                font-family: Theme.font-mono;
+                font-size: Theme.fs-meta;
+                font-weight: 600;
+                vertical-alignment: center;
+            }
+        }
+    }
+    // Sans serveur seulement : sinon le clic épingle le panneau, comme pour les autres widgets.
+    zone := TouchArea {
+        enabled: root.total == 0;
+        mouse-cursor: pointer;
+        clicked => { root.reglages(); }
+    }
+}

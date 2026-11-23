@@ -1,0 +1,16 @@
+{
+  "id": "claude-quota",
+  "name": "Quota Claude",
+  "version": "1.0.0",
+  "api": 1,
+  "author": "KingsRequin",
+  "description": "Quota de l'abonnement Claude (session de 5 h, semaine, limites par modèle), lu à l'API d'Anthropic avec la connexion de Claude Code.",
+  "icon": "chartDonut",
+  "widget": { "squeeze": 9 },
+  "panel": true,
+  "permissions": {
+    "files": ["%USERPROFILE%/.claude/.credentials.json"],
+    "http": ["https://api.anthropic.com/api/oauth/usage"],
+    "events": ["presence"]
+  }
+}
