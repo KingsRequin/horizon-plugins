@@ -13,8 +13,6 @@ déclaré — et que tu as accepté.
 
 | Plugin | Ce qu'il fait | Demande |
 |---|---|---|
-| [Batteries (SharkApp)](plugins/sharkapp) | batteries du téléphone et de la montre, alerte batterie faible, appel dans l'îlot | lecture des fichiers de l'agent SharkApp |
-| [Éclairage (Prisme)](plugins/prisme) | scène et luminosité de Prisme ; pochette, « Ne pas déranger », Claude et minuteur sur les LED | connexion à Prisme (port 28650), événements d'Horizon |
 | [Essaim (curseur)](plugins/essaim) | pause d'[Essaim](https://github.com/KingsRequin/essaim) d'un clic, choix du preset, ouverture de ses réglages (presets : Essaim 0.13 ou plus récent) | connexion à Essaim (port 28670) |
 | [Quota Claude](plugins/claude-quota) | quota de l'abonnement Claude : session de 5 h, semaine, limites par modèle, rythme et répartition | lecture de la connexion de Claude Code, API d'Anthropic, verrouillage et veille |
 | [Serveurs (homelab)](plugins/serveurs) | état des machines de `~/.ssh/config` et de celles ajoutées à la main, alerte à la chute et au retour, terminal SSH, interface web | lecture de `~/.ssh/config`, test des machines, terminal SSH, liens web, verrouillage et veille |

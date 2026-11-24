@@ -42,29 +42,6 @@
       "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/essaim-1.0.0.json"
     },
     {
-      "id": "prisme",
-      "name": "Éclairage (Prisme)",
-      "version": "1.0.1",
-      "api": 0,
-      "author": "KingsRequin",
-      "description": "Scène et luminosité de Prisme ; la couleur de la pochette, « Ne pas déranger », Claude qui attend et la fin du minuteur sur les LED.",
-      "icon": "lightbulb",
-      "permissions": {
-        "connect": [
-          "ws://127.0.0.1:28650"
-        ],
-        "events": [
-          "accent",
-          "dnd",
-          "alert",
-          "timer"
-        ]
-      },
-      "size": 10423,
-      "sha256": "a629d91c6f088d5911a46e9617462daafa685e2419febfbc9bf21a9dc16f3273",
-      "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/prisme-1.0.1.json"
-    },
-    {
       "id": "serveurs",
       "name": "Serveurs (homelab)",
       "version": "1.0.0",
@@ -88,24 +65,6 @@
       "size": 40094,
       "sha256": "10798bc3d83c875105c412e1ea1027924de4a051b25b08f5730b2e1ce70420de",
       "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/serveurs-1.0.0.json"
-    },
-    {
-      "id": "sharkapp",
-      "name": "Batteries (SharkApp)",
-      "version": "1.0.0",
-      "api": 0,
-      "author": "KingsRequin",
-      "description": "Batteries du téléphone et de la montre, alerte batterie faible et appel en cours dans l'îlot (fichiers de l'agent SharkApp).",
-      "icon": "batteryFull",
-      "permissions": {
-        "files": [
-          "%LOCALAPPDATA%/KingsHub/batteries.json",
-          "%LOCALAPPDATA%/KingsHub/phone.json"
-        ]
-      },
-      "size": 6337,
-      "sha256": "e1f06cd653d72482bf71d2e5fb07219036352cbd7f8a8f5a8f403f40d56bc60b",
-      "url": "https://raw.githubusercontent.com/KingsRequin/horizon-plugins/main/dist/sharkapp-1.0.0.json"
     }
   ]
 }
